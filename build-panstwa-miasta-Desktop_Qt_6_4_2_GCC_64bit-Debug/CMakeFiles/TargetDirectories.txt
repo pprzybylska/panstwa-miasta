@@ -1,0 +1,9 @@
+/home/vboxuser/SK2/panstwa-miasta/build-panstwa-miasta-Desktop_Qt_6_4_2_GCC_64bit-Debug/CMakeFiles/panstwa-miasta.dir
+/home/vboxuser/SK2/panstwa-miasta/build-panstwa-miasta-Desktop_Qt_6_4_2_GCC_64bit-Debug/CMakeFiles/edit_cache.dir
+/home/vboxuser/SK2/panstwa-miasta/build-panstwa-miasta-Desktop_Qt_6_4_2_GCC_64bit-Debug/CMakeFiles/rebuild_cache.dir
+/home/vboxuser/SK2/panstwa-miasta/build-panstwa-miasta-Desktop_Qt_6_4_2_GCC_64bit-Debug/CMakeFiles/list_install_components.dir
+/home/vboxuser/SK2/panstwa-miasta/build-panstwa-miasta-Desktop_Qt_6_4_2_GCC_64bit-Debug/CMakeFiles/install.dir
+/home/vboxuser/SK2/panstwa-miasta/build-panstwa-miasta-Desktop_Qt_6_4_2_GCC_64bit-Debug/CMakeFiles/install/local.dir
+/home/vboxuser/SK2/panstwa-miasta/build-panstwa-miasta-Desktop_Qt_6_4_2_GCC_64bit-Debug/CMakeFiles/install/strip.dir
+/home/vboxuser/SK2/panstwa-miasta/build-panstwa-miasta-Desktop_Qt_6_4_2_GCC_64bit-Debug/CMakeFiles/panstwa-miasta_autogen_timestamp_deps.dir
+/home/vboxuser/SK2/panstwa-miasta/build-panstwa-miasta-Desktop_Qt_6_4_2_GCC_64bit-Debug/CMakeFiles/panstwa-miasta_autogen.dir

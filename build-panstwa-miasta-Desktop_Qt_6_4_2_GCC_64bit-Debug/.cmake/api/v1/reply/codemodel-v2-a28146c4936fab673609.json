@@ -1,0 +1,79 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-.-Debug-408c51019e1032a19ee2.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.16"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2
+					]
+				}
+			],
+			"name" : "Debug",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0
+					],
+					"name" : "panstwa-miasta",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 0,
+					"id" : "panstwa-miasta::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-panstwa-miasta-Debug-f1f0d10bf4c8570a98cb.json",
+					"name" : "panstwa-miasta",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "panstwa-miasta_autogen::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-panstwa-miasta_autogen-Debug-34349aa3e82be23e3908.json",
+					"name" : "panstwa-miasta_autogen",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "panstwa-miasta_autogen_timestamp_deps::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-panstwa-miasta_autogen_timestamp_deps-Debug-de77ca94f5ab3168dc4c.json",
+					"name" : "panstwa-miasta_autogen_timestamp_deps",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "/home/vboxuser/SK2/panstwa-miasta/build-panstwa-miasta-Desktop_Qt_6_4_2_GCC_64bit-Debug",
+		"source" : "/home/vboxuser/SK2/panstwa-miasta/panstwa-miasta"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 4
+	}
+}
