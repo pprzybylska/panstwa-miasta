@@ -7,13 +7,8 @@
 - Patrycja Przybylska 146247
 - Joanna Nuebauer 148111
 
-## Opis:
+## Use case:
 
-Sieci Komputerowe 2
-=== Gra Państwa-miasta ===
-
-	
-#### Use case:
 *(wszytskie parametry ze znakiem * są konfigurowalnymi zmiennymi z pliku konfiguracyjnego)*
 
 Gracz łączy się do serwera i wysyła swój nick (jeśli nick jest już zajęty,
