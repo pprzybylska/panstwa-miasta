@@ -18,11 +18,36 @@
 
 const int sendInfo = 10;
 const int sendLetter = 11;
-const int sendTime = 12;
-const int sendError = 13;
+const int sendTimeLobby = 12;
+const int sendTimeGame = 13;
+const int sendError = 14;
 
+const int sendRankingStart = 15;
+const int sendRankingPosition = 16;
+const int sendRankingEnd = 17;
+
+const int sendNicknamesStart = 18;
+const int sendNickname = 19;
+const int sendNicknamesEnd = 20;
 
 const int receiveNickname = 100;
+const int receiveCountry = 101;
+const int receiveCity = 102;
+const int receiveName = 103;
+const int receiveAnimal = 104;
+const int receiveJob = 105;
+const int receiveObject = 106;
+
+const int startGameSignal = 200;
+const int stopGameSignal = 201;
+
+char countries[255][20];
+char cities[255][20];
+char names[255][20];
+char animals[255][20];
+char jobs[255][20];
+char objects[255][20];
+
 // server socket
 int servFd;
 
@@ -36,13 +61,13 @@ char currentLetter;
 int gamersCounter = 0;
 int lobbyCounter = 0;
 int gameCounter = 0;
-//game state = 0 : there is no game rigth now
-//game state = 1 : there is a game rigth now
+//game state = 1 : there is no game rigth now
+//game state = 2 : there is a game rigth now
 int gamersState[255];
-int gameState = 0;
-int roundTime = 10;
-int breakTime = 10;
-int gameTime = 30;
+int gameState = 1;
+int roundTime = 120;
+int breakTime = 40;
+int gameTime = 120;
 
 struct playerStats {
     char nickname[10];
@@ -53,9 +78,17 @@ playerStats playersStats[255];
 
 char buffer[255];
 
+void sendNicknamesLobby();
+
 void clearBuffer() {
     for(int i = 0; i < 255; i++) {
         buffer[i] = 0;
+    }
+}
+
+void clearMessage(char* message, int size) {
+    for (int i = 0; i < size; i++) {
+        message[i] = 0;
     }
 }
 
@@ -79,20 +112,46 @@ uint16_t readPort(char * txt);
 // sets SO_REUSEADDR
 void setReuseAddr(int sock);
 
+void clearGameArrays() {
+    int i, j;
+
+    for(i = 0; i < 255; i++) {
+        for (j = 0; j < 20; j++) {
+            countries[i][j] = 0;
+            cities[i][j] = 0;
+            names[i][j] = 0;
+            animals[i][j] = 0;
+            jobs[i][j] = 0;
+            objects[i][j] = 0;
+        }
+    }
+}
+
 void sendToAll(int count){
     int i = 1;
     while(i < descrCount){
         int clientFd = descr[i].fd;
-        int res = write(clientFd, buffer, count);
-        if(res!=count){
-            printf("removing %d\n", clientFd);
-            shutdown(clientFd, SHUT_RDWR);
-            close(clientFd);
-            descr[i] = descr[descrCount-1];
-            descrCount--;
-            continue;
-        
+        if (gamersState[clientFd] == 1 || gamersState[clientFd] == 2) {
+            int res = write(clientFd, buffer, count);
+            if(res!=count){
+                printf("removing %d\n", clientFd);
+                shutdown(clientFd, SHUT_RDWR);
+                close(clientFd);
+                descr[i] = descr[descrCount-1];
+                descrCount--;
+                sendNicknamesLobby();
+                continue;
+            }
         }
+        i++;
+    }
+}
+
+void clearPoints() {
+    int i = 1;
+    while(i < descrCount){
+        int clientFd = descr[i].fd;
+        playersStats[clientFd].points = 0;
         i++;
     }
 }
@@ -101,7 +160,7 @@ void sendToClient(int receiverFd, int count){
     int i = 1;
     while(i < descrCount){
         int clientFd = descr[i].fd;
-        if (clientFd = receiverFd) {
+        if (clientFd == receiverFd) {
             int res = write(receiverFd, buffer, count);
             if(res!=count){
                 printf("removing %d\n", clientFd);
@@ -109,6 +168,7 @@ void sendToClient(int receiverFd, int count){
                 close(clientFd);
                 descr[i] = descr[descrCount-1];
                 descrCount--;
+                sendNicknamesLobby();
                 continue;
             }
         }
@@ -121,7 +181,7 @@ void sendToAllinGame(int count){
     int i = 1;
     while(i < descrCount){
         int clientFd = descr[i].fd;
-		if (gamersState[clientFd] == 1) {
+		if (gamersState[clientFd] == 2) {
         	int res = write(clientFd, buffer, count);
 			if(res!=count){
 				printf("removing %d\n", clientFd);
@@ -129,6 +189,7 @@ void sendToAllinGame(int count){
 				close(clientFd);
 				descr[i] = descr[descrCount-1];
 				descrCount--;
+                sendNicknamesLobby();
 				continue;
 			}
         }
@@ -140,7 +201,7 @@ void sendToAllinLobby(int count){
     int i = 1;
     while(i < descrCount){
         int clientFd = descr[i].fd;
-		if (gamersState[clientFd] == 0) {
+		if (gamersState[clientFd] == 1) {
         	int res = write(clientFd, buffer, count);
 			if(res!=count){
 				printf("removing %d\n", clientFd);
@@ -148,6 +209,7 @@ void sendToAllinLobby(int count){
 				close(clientFd);
 				descr[i] = descr[descrCount-1];
 				descrCount--;
+                sendNicknamesLobby(); 
 				continue;
 			}
         }
@@ -158,14 +220,14 @@ void sendToAllinLobby(int count){
 void gamerLeaves(int clientFd) {
 	gamersCounter--;
     int count;
-    if (gamersState[clientFd] == 0) {
+    if (gamersState[clientFd] == 1) {
         lobbyCounter--;
         char message[255];
         snprintf(message, sizeof(message), "Gracz wyszedl! Aktualnie w lobby znaduje sie %d graczy.\n", lobbyCounter);
         count = setBuffer(sendInfo, &message[0]);
 	    sendToAllinLobby(count);
     }
-    else if (gamersState[clientFd] == 1) {
+    else if (gamersState[clientFd] == 2) {
         gameCounter--;
         char message[255];
         snprintf(message, sizeof(message), "Gracz wyszedl! Aktualnie w grze znaduje sie %d graczy.\n", gameCounter);
@@ -174,6 +236,117 @@ void gamerLeaves(int clientFd) {
     }
 
 }
+
+bool areValuesUnique(int currentFd, char array[255][20]) {
+    int i = 1;
+    bool isUnique = true;
+    while(i < descrCount){
+        int clientFd = descr[i].fd;
+        if (clientFd != currentFd ){
+            if (strcasecmp(array[clientFd], array[currentFd]) == 0) {
+                isUnique = false;
+                break;
+            }
+        }
+        i++;
+        }
+        return isUnique;
+}
+
+void createRanking() {
+    int i = 1;
+    bool isUnique;
+    while(i < descrCount){
+        int clientFd = descr[i].fd;
+
+        //check country
+        if (countries[clientFd][0] != currentLetter) {
+            playersStats[clientFd].points += 0;
+        }
+        else {
+            isUnique = areValuesUnique(clientFd, countries);
+            if (isUnique) {
+                playersStats[clientFd].points += 10;
+            }
+            else {
+                playersStats[clientFd].points += 5;
+            }
+        }
+
+          //check city
+        if (cities[clientFd][0] != currentLetter) {
+            playersStats[clientFd].points += 0;
+        }
+        else {
+            isUnique = areValuesUnique(clientFd, cities);
+            if (isUnique) {
+                playersStats[clientFd].points += 10;
+            }
+            else {
+                playersStats[clientFd].points += 5;
+            }
+        }
+
+          //check name
+        if (names[clientFd][0] != currentLetter) {
+            playersStats[clientFd].points += 0;
+        }
+        else {
+            isUnique = areValuesUnique(clientFd, names);
+            if (isUnique) {
+                playersStats[clientFd].points += 10;
+            }
+            else {
+                playersStats[clientFd].points += 5;
+            }
+        }
+
+          //check animal
+        if (animals[clientFd][0] != currentLetter) {
+            playersStats[clientFd].points += 0;
+        }
+        else {
+            isUnique = areValuesUnique(clientFd, animals);
+            if (isUnique) {
+                playersStats[clientFd].points += 10;
+            }
+            else {
+                playersStats[clientFd].points += 5;
+            }
+        }
+
+          //check job
+        if (jobs[clientFd][0] != currentLetter) {
+            playersStats[clientFd].points += 0;
+        }
+        else {
+            isUnique = areValuesUnique(clientFd, jobs);
+            if (isUnique) {
+                playersStats[clientFd].points += 10;
+            }
+            else {
+                playersStats[clientFd].points += 5;
+            }
+        }
+
+          //check object
+        if (objects[clientFd][0] != currentLetter) {
+            playersStats[clientFd].points += 0;
+        }
+        else {
+            isUnique = areValuesUnique(clientFd, objects);
+            if (isUnique) {
+                playersStats[clientFd].points += 10;
+            }
+            else {
+                playersStats[clientFd].points += 5;
+            }
+        }
+        i++;
+        }
+        clearGameArrays();
+    }
+
 
 void eventOnServFd(int revents) {
     // Wszystko co nie jest POLLIN na gnieździe nasłuchującym jest traktowane
@@ -199,17 +372,12 @@ void eventOnServFd(int revents) {
         descr[descrCount].fd = clientFd;
         descr[descrCount].events = POLLIN|POLLRDHUP;
         descrCount++;
-		gamersCounter++;
-		gamersState[clientFd] = 0;
-		lobbyCounter++;
+
 
         playersStats[clientFd].points = 0;
+        strcpy(playersStats[clientFd].nickname, "");
 
-		char message[255];
-        int count;
-		snprintf(message, sizeof(message), "Nowy gracz! Aktualnie w lobby znaduje sie %d graczy.\n", lobbyCounter);
-        count = setBuffer(sendInfo, &message[0]);
-		sendToAllinLobby(count);
+
         
         printf("new connection from: %s:%hu (fd: %d)\n", inet_ntoa(clientAddr.sin_addr), ntohs(clientAddr.sin_port), clientFd);
     }
@@ -253,6 +421,8 @@ void eventOnClientFd(int indexInDescr) {
         char readBuffer[255];
         char message[255];
         char messageText[255];
+        char nickname[10];
+        bool nicknameUnique;
 
         for(int i = 0; i < 255; i++) {
             readBuffer[i] = 0;
@@ -268,32 +438,51 @@ void eventOnClientFd(int indexInDescr) {
 		}
         else {
             switch (messageType) {
-                case 100:
-                    char nickname[10];
-                    // for (int i = 0; i < 10; i++) {
-                    //     nickname[i] = messageText[i];
-                    // }
+                case receiveNickname:
                     strncpy(nickname, messageText, 10);
 
-                    bool nicknameUnique = isNicknameUnique(&nickname[0]);
-                    // printf("%d", nicknameUnique);
+                    nicknameUnique = isNicknameUnique(&nickname[0]);
                     if (nicknameUnique == true) {
                         strncpy(playersStats[clientFd].nickname, nickname, 10);
+                        snprintf(message, sizeof(message), "true\n");
+                        count = setBuffer(sendInfo, &message[0]);
+                        sendToClient(clientFd, count);
+                        gamersCounter++;
+                        gamersState[clientFd] = 1;
+                        lobbyCounter++;
+                        snprintf(message, sizeof(message), "Nowy gracz! Aktualnie w lobby znaduje sie %d graczy.\n", lobbyCounter);
+                        count = setBuffer(sendInfo, &message[0]);
+                        sendToAllinLobby(count);
+
+                        sendNicknamesLobby();
                     }
                     else {
-                        snprintf(message, sizeof(message), "Nick %s jest juz zajety. Sprobuj innego.\n", nickname);
+                        snprintf(message, sizeof(message), "false\n");
                         count = setBuffer(sendInfo, &message[0]);
                         sendToClient(clientFd, count);
                     }
+                    break;
+                case receiveCountry:
+                    printf("message text: %s", messageText);
+                    strncpy(countries[clientFd], messageText, 20);
+                    break;
+                case receiveCity:
+                    strncpy(cities[clientFd], messageText, 20);
+                    break;
+                case receiveName:
+                    strncpy(names[clientFd], messageText, 20);
+                    break;
+                case receiveAnimal:
+                    strncpy(animals[clientFd], messageText, 20);
+                    break;
+                case receiveJob:
+                    strncpy(jobs[clientFd], messageText, 20);
+                    break;
+                case receiveObject:
+                    strncpy(objects[clientFd], messageText, 20);
+                    break;
             }
         }
-		// else if (readBuffer[0] == currentLetter) {
-		// 	write(clientFd, "Dobra robota!\n", 15);
-		// }
-		// else {
-		// 	write(clientFd, "Niestety slowo powinno sie zaczynac na inna litere!\n", 53);
-		// }
-
     }
     
     if(revents & ~POLLIN){
@@ -303,8 +492,106 @@ void eventOnClientFd(int indexInDescr) {
         descr[indexInDescr] = descr[descrCount-1];
         descrCount--;
         shutdown(clientFd, SHUT_RDWR);
+        sendNicknamesLobby();
         close(clientFd);
     }
+}
+
+void sendRanking() {
+    char message[255];
+    int count;
+
+    snprintf(message, sizeof(message), "%d\n", gameCounter);
+    count = setBuffer(sendRankingStart, &message[0]);
+	sendToAll(count);
+
+    clearMessage(&message[0], 255);
+
+    int i = 1;
+    while(i < descrCount){
+        int clientFd = descr[i].fd;
+
+        if (gamersState[clientFd] == 2) {
+            clearMessage(&message[0], 255);
+            snprintf(message, sizeof(message), "%s;%d\n", playersStats[clientFd].nickname, playersStats[clientFd].points);
+            count = setBuffer(sendRankingPosition, &message[0]);
+            sendToAll(count);
+        }
+        
+        i++;
+    }
+
+    clearMessage(&message[0], 255);
+
+    snprintf(message, sizeof(message), "\n");
+    count = setBuffer(sendRankingEnd, &message[0]);
+	sendToAll(count);
+
+}
+
+void sendNicknamesGame() {
+    char message[255];
+    int count;
+
+    snprintf(message, sizeof(message), "%d\n", gameCounter);
+    count = setBuffer(sendNicknamesStart, &message[0]);
+	sendToAll(count);
+
+    clearMessage(&message[0], 255);
+
+    int i = 1;
+    while(i < descrCount){
+        int clientFd = descr[i].fd;
+
+        if (gamersState[clientFd] == 2) {
+            clearMessage(&message[0], 255);
+            snprintf(message, sizeof(message), "%s\n", playersStats[clientFd].nickname);
+            count = setBuffer(sendNickname, &message[0]);
+            sendToAll(count);
+        }
+        
+        i++;
+    }
+
+    clearMessage(&message[0], 255);
+
+    snprintf(message, sizeof(message), "Nicki koniec\n");
+    count = setBuffer(sendNicknamesEnd, &message[0]);
+	sendToAll(count);
+
+}
+
+void sendNicknamesLobby() {
+    char message[255];
+    int count;
+
+
+    snprintf(message, sizeof(message), "\n");
+    count = setBuffer(sendNicknamesStart, &message[0]);
+	sendToAllinLobby(count);
+
+    clearMessage(&message[0], 255);
+
+    int i = 1;
+    while(i < descrCount){
+        int clientFd = descr[i].fd;
+
+        if (gamersState[clientFd] == 1 && strcmp(playersStats[clientFd].nickname, "") != 0) {
+            clearMessage(&message[0], 255);
+            snprintf(message, sizeof(message), "%s\n", playersStats[clientFd].nickname);
+            count = setBuffer(sendNickname, &message[0]);
+            sendToAllinLobby(count);
+        }
+        
+        i++;
+    }
+
+    clearMessage(&message[0], 255);
+
+    snprintf(message, sizeof(message), "\n");
+    count = setBuffer(sendNicknamesEnd, &message[0]);
+	sendToAllinLobby(count);
+
 }
 
 void drawingLetter() {
@@ -318,6 +605,8 @@ void drawingLetter() {
 	sendToAll(count);
 }
 
+
+ 
 void gameManager(){
 	std::chrono::steady_clock sc;
 	auto startBreak = sc.now();
@@ -325,61 +614,105 @@ void gameManager(){
 	auto startRoundTime = sc.now();
     auto sendSeconds = sc.now();
     char message[255];
-    int count;
+    int count, timeToNextGame, timeToGameEnd;
+    bool firstIteration = true;
 
 	while(true) {
+
+        clearMessage(&message[0], 255);
+
 		auto sendSecondsSpan = static_cast<std::chrono::duration<double>>(sc.now() - sendSeconds);
 		auto breakTimeSpan = static_cast<std::chrono::duration<double>>(sc.now() - startBreak);
 		auto gameTimeSpan = static_cast<std::chrono::duration<double>>(sc.now() - startGame);
 
-        // if (sendSecondsSpan.count() > 1) {
-        //     sendSeconds = sc.now();
-        //     if (gameState == 0) {
-        //         snprintf(message, sizeof(message), "%f\n", breakTimeSpan.count());
-        //     }
-        //     else if (gameState == 1) {
-        //         snprintf(message, sizeof(message), "%f\n", gameTimeSpan.count());
-        //     }
-        //     count = setBuffer(sendTime, &message[0]);
-		// 	sendToAll(count);
-        // }
+        if (sendSecondsSpan.count() > 1) {
+            sendSeconds = sc.now();
+            if (gameState == 1) {
+                if ((int)(breakTime - breakTimeSpan.count()) >= 0) {
+                    timeToNextGame = (int)(breakTime - breakTimeSpan.count());
+                    snprintf(message, sizeof(message), "%d\n", timeToNextGame);
+                    count = setBuffer(sendTimeLobby, &message[0]);
+                    sendToAll(count);
+                }
+                else {
+                    snprintf(message, sizeof(message), "Czas przerwy minal, jednak w lobby jest za malo uzytkownikow zeby zaczac gre\n");
+                    count = setBuffer(sendInfo, &message[0]);
+                    sendToAll(count);
+                }
+            }
+            else if (gameState == 2) {
+                timeToNextGame = (int)(gameTime + breakTime - gameTimeSpan.count());
+                snprintf(message, sizeof(message), "%d\n",  timeToNextGame);
+                count = setBuffer(sendTimeLobby, &message[0]);
+    			sendToAll(count);
+
+                timeToGameEnd = (int)(gameTime - gameTimeSpan.count());
+                snprintf(message, sizeof(message), "%d\n", timeToGameEnd);
+                count = setBuffer(sendTimeGame, &message[0]);
+			    sendToAll(count);
+            }
+        }
 
 
-		if (breakTimeSpan.count() > breakTime && gameState == 0 && gamersCounter >= 2) {
-			gameState = 1;
+		if (breakTimeSpan.count() > breakTime && gameState == 1 && gamersCounter >= 2) {
+            firstIteration = false;
+			gameState = 2;
 			startGame = sc.now();
+			startRoundTime = sc.now();
 			for(int i = 0 ; i < descrCount; ++i){
-                if(descr[i].fd != servFd) {
-					gamersState[descr[i].fd] = 1;
+                if(descr[i].fd != servFd && strcmp(playersStats[descr[i].fd].nickname, "") != 0) {
+					gamersState[descr[i].fd] = 2;
 					gameCounter++;
             	}
 			}
+
 			lobbyCounter = 0;
+            snprintf(message, sizeof(message), "\n");
+            count = setBuffer(startGameSignal, &message[0]);
+			sendToAll(count);
+
+            clearMessage(&message[0], 255);
+
             snprintf(message, sizeof(message), "Rozpoczynacie gre, aktualnie jest was %d graczy\n", gameCounter);
             count = setBuffer(sendInfo, &message[0]);
 			sendToAllinGame(count);
+			drawingLetter();
 		}
-		else if ((gameTimeSpan.count() > gameTime && gameState == 1) || (gamersCounter < 2 && gameState == 1)) {
+		else if ((gameTimeSpan.count() > gameTime && gameState == 2) || (gamersCounter < 2 && gameState == 2)) {
+            if (firstIteration == false) {
+                createRanking();
+                sendRanking();
+                clearPoints();
+            }
 			startBreak = sc.now();
-			gameState = 0;
+			gameState = 1;
+            clearMessage(&message[0], 255);
             snprintf(message, sizeof(message), "Gra sie konczy, uzytkownicy wracaja do lobby\n");
             count = setBuffer(sendInfo, &message[0]);
 			gameCounter = 0;
 			sendToAllinGame(count);
             for(int i = 0 ; i < descrCount; ++i){
-                if(descr[i].fd != servFd) {
-					gamersState[descr[i].fd] = 0;
+                if(descr[i].fd != servFd && strcmp(playersStats[descr[i].fd].nickname, "")) {
+					gamersState[descr[i].fd] = 1;
 					lobbyCounter++;
             	}
 			}
+            sendNicknamesLobby();
+            clearMessage(&message[0], 255);
+            snprintf(message, sizeof(message), "\n");
+            count = setBuffer(stopGameSignal, &message[0]);
+			sendToAll(count);
+
+            clearMessage(&message[0], 255);
             snprintf(message, sizeof(message), "Aktualnie w lobby znaduje sie %d graczy.\n", lobbyCounter);
             count = setBuffer(sendInfo, &message[0]);
             sendToAllinLobby(count);
 		}
 
-		if (gameState == 1) {
+		if (gameState == 2) {
 			auto roundTimeSpan = static_cast<std::chrono::duration<double>>(sc.now() - startRoundTime);
 			if (roundTimeSpan.count() >= roundTime) {
+                createRanking();
 				startRoundTime = sc.now();
 				drawingLetter();
 			}
