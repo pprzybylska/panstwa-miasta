@@ -260,7 +260,7 @@ void createRanking() {
         int clientFd = descr[i].fd;
 
         //check country
-        if (countries[clientFd][0] != currentLetter) {
+        if (countries[clientFd][0] != currentLetter && countries[clientFd][0] != toupper(currentLetter)) {
             playersStats[clientFd].points += 0;
         }
         else {
@@ -274,7 +274,7 @@ void createRanking() {
         }
 
           //check city
-        if (cities[clientFd][0] != currentLetter) {
+        if (cities[clientFd][0] != currentLetter && cities[clientFd][0] != toupper(currentLetter)) {
             playersStats[clientFd].points += 0;
         }
         else {
@@ -288,7 +288,7 @@ void createRanking() {
         }
 
           //check name
-        if (names[clientFd][0] != currentLetter) {
+        if (names[clientFd][0] != currentLetter && names[clientFd][0] != toupper(currentLetter)) {
             playersStats[clientFd].points += 0;
         }
         else {
@@ -302,7 +302,7 @@ void createRanking() {
         }
 
           //check animal
-        if (animals[clientFd][0] != currentLetter) {
+        if (animals[clientFd][0] != currentLetter && animals[clientFd][0] != toupper(currentLetter)) {
             playersStats[clientFd].points += 0;
         }
         else {
@@ -316,7 +316,7 @@ void createRanking() {
         }
 
           //check job
-        if (jobs[clientFd][0] != currentLetter) {
+        if (jobs[clientFd][0] != currentLetter && jobs[clientFd][0] != toupper(currentLetter)) {
             playersStats[clientFd].points += 0;
         }
         else {
@@ -330,7 +330,7 @@ void createRanking() {
         }
 
           //check object
-        if (objects[clientFd][0] != currentLetter) {
+        if (objects[clientFd][0] != currentLetter && objects[clientFd][0] != toupper(currentLetter)) {
             playersStats[clientFd].points += 0;
         }
         else {
