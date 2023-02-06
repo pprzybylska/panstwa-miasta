@@ -7,11 +7,10 @@ MainWindow::MainWindow(qint16 port, QString ip, QWidget *parent):
 {
     ui->setupUi(this);
     userName = "";
-    nameAvaiable = false;
+    this->nameAvaiable = false;
 
     ui->GameGroup->hide();
     ui->LobbyGroup->hide();
-    ui->rankingGroup->hide();
 
     ui->PBtnEnterGame->setEnabled(false);
     ui->enterName->setEnabled(false);
@@ -29,11 +28,19 @@ MainWindow::MainWindow(qint16 port, QString ip, QWidget *parent):
     connect(ui->PBtnEnterGame, &QPushButton::clicked, this, &MainWindow::PushBtnEnter);
 
     connect(ui->disconnect, &QPushButton::clicked, this, &MainWindow::socketDisconnected);
-    connect(ui->leaveBtn, &QPushButton::clicked, this, &MainWindow::socketDisconnected);
-//    connect(ui->leaveBtn, &QPushButton::clicked, this, &MainWindow::PushBtnGoLobby);
+    connect(ui->leaveBtn, &QPushButton::clicked, this, &MainWindow::PushBtnGoLobby);
     connect(ui->submitBtn, &QPushButton::clicked, this, &MainWindow::submitBtnHit);
-    connect(ui->okRanking, &QPushButton::clicked, [=,this]{ ui->rankingGroup->hide(); });
 
+    // TODO: populate users in game (ask server for list of strings with user names)
+    QList<QString> usersL;
+    usersL << "test" << "chuj" << "twoja" << "stara";
+    ui->usersList->addItems(usersL);
+
+    // TODO: populate temp users in lobby (ask server for list of strings with user names)
+    QList<QString> usersLobby;
+    usersLobby << userName;
+    usersLobby << "tmp";
+    ui->listLobby->addItems(usersLobby);
 }
 
 MainWindow::~MainWindow() {
@@ -50,10 +57,7 @@ void MainWindow::PushBtnEnter() {
     } else if (name.size() < 1) {
         QMessageBox::critical(this, "Name Error", "You must chooose a name!"),
                 QMessageBox::Ok;
-    }
-    sendMessage("100 ", name);
-    sleep(1);
-    if (nameAvaiable == true) {
+    } else if (this->nameAvaiable == true) {
         userName = name;
         ui->LoginGroup->hide();
         ui->LobbyGroup->show();
@@ -88,10 +92,15 @@ void MainWindow::socketError(QTcpSocket::SocketError err){
 }
 
 void MainWindow::socketReadable(){
-    QString tmpName;
-    QList<QByteArray> tmpList;
-
     QByteArray buf = sock->readLine();
+
+    if (buf.length() == 0)  {
+        QMessageBox::critical(this, "Connection Error", "Error occured. Aborting..."),
+                QMessageBox::Ok;
+        if(sock) sock->close();
+        QApplication::exit(-1);
+    }
+
     QByteArray headBuf = buf.first(4);
     QByteArray message =  buf.sliced(4);
     int head = headBuf.toInt();
@@ -114,42 +123,7 @@ void MainWindow::socketReadable(){
         if(sock) sock->close();
         QApplication::exit(-1);
         break;
-
-    case 15:    // ranking start    _gamer-counter
-        ui->rankingGroup->hide();
-        ranking.clear();
-        numRanking = message.toInt();
-        break;
-    case 16:    // ranking      _name;point
-        tmpList = message.trimmed().split(';');
-        tmpName = QString::fromStdString(tmpList[1].toStdString()) + ' ' +
-                QString::fromStdString(tmpList[0].toStdString());
-        ranking << tmpName;
-        break;
-    case 17:    // ranking end  _\n
-        ui->rankingGroup->show();
-        ui->rankingList->clear();
-        ui->rankingList->addItems(ranking);
-        if (ranking.length() != numRanking)
-            ui->rankingList->addItem("... There was more, but we lost it. Sorry");
-        break;
-
-    case 18:    // lobby start  _counter
-        usersLobby.clear();
-        numUsersLobby = message.toInt();
-        break;
-    case 19:    // lobby name   _name
-        tmpName = QString::fromStdString(message.trimmed().toStdString());
-        usersLobby << tmpName;
-        break;
-    case 20:    // lobby end    _\n
-        ui->listLobby->clear();
-        ui->listLobby->addItems(usersLobby);
-        if (usersLobby.length() != numUsersLobby)
-            ui->listLobby->addItem("... There was more, but we lost it. Sorry");
-        break;
-
-    case 21:    // name avaiable
+    case 15:    // name avaiable
         if (message.contains("false")) {
             QMessageBox::critical(this, "Used Name Error", "This name is already taken./nPlease choose another one."),
                     QMessageBox::Ok;
@@ -159,16 +133,10 @@ void MainWindow::socketReadable(){
             ui->LobbyGroup->show();
         }
         break;
-
-    case 200:    // start game
+    case 50:    // go lobby -> game
         ui->LobbyGroup->hide();
         ui->GameGroup->show();
         QMessageBox::information(this, "New Game", "New game will start now."), QMessageBox::Ok;
-        break;
-    case 201:   // end game (lobby)
-        QMessageBox::information(this, "Game Over", "The game is finished"), QMessageBox::Ok;
-        ui->GameGroup->hide();
-        ui->LobbyGroup->show();
         break;
     default:
         break;
@@ -176,28 +144,20 @@ void MainWindow::socketReadable(){
 }
 
 void MainWindow::submitBtnHit(){
-    /*
-    101 country; 102 city; 103 name; 104 animal; 105 job; 106 object
-    */
     auto country = ui->imieLine->text().trimmed();
     if (country.isEmpty()) country = " ";
     auto city = ui->miastoLine->text().trimmed();
-//    if (city.isEmpty()) city = " ";
+    if (city.isEmpty()) city = " ";
     auto name = ui->panstwoLine->text().trimmed();
-//    if (name.isEmpty()) name = " ";
+    if (name.isEmpty()) name = " ";
     auto animal = ui->rzeczLine->text().trimmed();
-//    if (animal.isEmpty()) animal = " ";
+    if (animal.isEmpty()) animal = " ";
     auto job = ui->zawodLine->text().trimmed();
-//    if (job.isEmpty()) job = " ";
+    if (job.isEmpty()) job = " ";
     auto object = ui->zwierzeLine->text().trimmed();
-//    if (object.isEmpty()) object = " ";
+    if (object.isEmpty()) object = " ";
 
-    sendMessage("101 ", country + " ");
-    sendMessage("102 ", city + " ");
-    sendMessage("103 ", name + " ");
-    sendMessage("104 ", animal + " ");
-    sendMessage("105 ", job + " ");
-    sendMessage("106 ", object + " ");
+    ui->enterAnswer->setEnabled(false);
 }
 
 int MainWindow::sendMessage(QString header, QString message) {
@@ -208,3 +168,13 @@ int MainWindow::sendMessage(QString header, QString message) {
     }
     return 0;
 }
+
+/*
+100 recive nickname
+101 country
+102 city
+103 name
+104 animal
+105 job
+106 object
+*/

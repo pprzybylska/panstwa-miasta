@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>876</width>
-    <height>593</height>
+    <width>871</width>
+    <height>791</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -26,9 +26,9 @@
     </property>
     <property name="geometry">
      <rect>
-      <x>200</x>
+      <x>110</x>
       <y>90</y>
-      <width>461</width>
+      <width>661</width>
       <height>441</height>
      </rect>
     </property>
@@ -40,11 +40,68 @@
       <rect>
        <x>10</x>
        <y>37</y>
-       <width>441</width>
+       <width>641</width>
        <height>391</height>
       </rect>
      </property>
      <layout class="QHBoxLayout" name="basicLayout">
+      <item>
+       <layout class="QVBoxLayout" name="boxUsersList">
+        <item>
+         <spacer name="verticalSpacer">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeType">
+           <enum>QSizePolicy::Preferred</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>5</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QLabel" name="labelUsersList">
+          <property name="font">
+           <font>
+            <pointsize>13</pointsize>
+           </font>
+          </property>
+          <property name="text">
+           <string>Users Currently Playing</string>
+          </property>
+          <property name="wordWrap">
+           <bool>true</bool>
+          </property>
+          <property name="margin">
+           <number>1</number>
+          </property>
+          <property name="indent">
+           <number>10</number>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QListWidget" name="usersList">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">QListWidget { background-color: rgb(192, 191, 188); color : black; }</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
       <item>
        <layout class="QVBoxLayout" name="boxOther">
         <item>
@@ -184,7 +241,7 @@
       <x>0</x>
       <y>0</y>
       <width>861</width>
-      <height>541</height>
+      <height>791</height>
      </rect>
     </property>
     <property name="sizePolicy">
@@ -202,7 +259,7 @@
        <x>10</x>
        <y>30</y>
        <width>841</width>
-       <height>501</height>
+       <height>746</height>
       </rect>
      </property>
      <layout class="QVBoxLayout" name="basicLayout_2">
@@ -419,7 +476,7 @@
       <item>
        <widget class="QPushButton" name="submitBtn">
         <property name="enabled">
-         <bool>true</bool>
+         <bool>false</bool>
         </property>
         <property name="text">
          <string>Submit</string>
@@ -908,58 +965,9 @@
      </layout>
     </widget>
    </widget>
-   <widget class="QGroupBox" name="rankingGroup">
-    <property name="geometry">
-     <rect>
-      <x>230</x>
-      <y>100</y>
-      <width>331</width>
-      <height>411</height>
-     </rect>
-    </property>
-    <property name="title">
-     <string>Ranking</string>
-    </property>
-    <widget class="QWidget" name="verticalLayoutWidget_3">
-     <property name="geometry">
-      <rect>
-       <x>9</x>
-       <y>29</y>
-       <width>311</width>
-       <height>371</height>
-      </rect>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout_2">
-      <item>
-       <widget class="QListWidget" name="rankingList">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="styleSheet">
-         <string notr="true">QListWidget { background-color: rgb(222, 221, 218); color : black; }</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="okRanking">
-        <property name="text">
-         <string>Ok</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </widget>
    <zorder>GameGroup</zorder>
    <zorder>LobbyGroup</zorder>
    <zorder>LoginGroup</zorder>
-   <zorder>rankingGroup</zorder>
   </widget>
  </widget>
  <resources/>

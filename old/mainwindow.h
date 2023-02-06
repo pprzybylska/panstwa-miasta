@@ -5,7 +5,6 @@
 #include <QList>
 #include <QMessageBox>
 #include <QTcpSocket>
-#include <unistd.h>
 
 
 QT_BEGIN_NAMESPACE
@@ -24,11 +23,6 @@ protected:
     QTcpSocket* sock;
     QString userName;
     bool nameAvaiable;
-
-    int numUsersLobby;
-    int numRanking;
-    QList<QString> usersLobby;
-    QList<QString> ranking;
 
     void socketConnected();
     void socketDisconnected();
