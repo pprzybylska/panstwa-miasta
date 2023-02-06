@@ -30,6 +30,8 @@ const int sendNicknamesStart = 18;
 const int sendNickname = 19;
 const int sendNicknamesEnd = 20;
 
+const int sendNickUniqnessInfo = 21;
+
 const int receiveNickname = 100;
 const int receiveCountry = 101;
 const int receiveCity = 102;
@@ -445,7 +447,7 @@ void eventOnClientFd(int indexInDescr) {
                     if (nicknameUnique == true) {
                         strncpy(playersStats[clientFd].nickname, nickname, 10);
                         snprintf(message, sizeof(message), "true\n");
-                        count = setBuffer(sendInfo, &message[0]);
+                        count = setBuffer(sendNickUniqnessInfo, &message[0]);
                         sendToClient(clientFd, count);
                         gamersCounter++;
                         gamersState[clientFd] = 1;
@@ -458,7 +460,7 @@ void eventOnClientFd(int indexInDescr) {
                     }
                     else {
                         snprintf(message, sizeof(message), "false\n");
-                        count = setBuffer(sendInfo, &message[0]);
+                        count = setBuffer(sendNickUniqnessInfo, &message[0]);
                         sendToClient(clientFd, count);
                     }
                     break;
