@@ -16,14 +16,25 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    MainWindow(QTcpSocket *socket, QWidget *parent = nullptr);
+    MainWindow(qint16 port, QString ip, QWidget *parent = nullptr);
     ~MainWindow();
 
 protected:
     QTcpSocket* sock;
-    void PushBtnDisconnect();
+    QString userName;
+    bool nameAvaiable;
+
+    void socketConnected();
+    void socketDisconnected();
+    void socketError(QTcpSocket::SocketError);
+    void socketReadable();
+    void PushBtnGoLobby();
+    void PushBtnEnter();
+    void submitBtnHit();
+    int sendMessage(QString header, QString message);
 
 private:
     Ui::MainWindow *ui;
 };
+
 #endif // MAINWINDOW_H
