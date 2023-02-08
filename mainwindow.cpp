@@ -16,6 +16,10 @@ MainWindow::MainWindow(qint16 port, QString ip, QWidget *parent):
     ui->PBtnEnterGame->setEnabled(false);
     ui->enterName->setEnabled(false);
 
+    // create timer
+    infoTimer = new QTimer(this);
+    infoTimer->setSingleShot(true);
+
     // create conection
     sock = new QTcpSocket();
     sock->connectToHost(ip, port);
@@ -33,6 +37,11 @@ MainWindow::MainWindow(qint16 port, QString ip, QWidget *parent):
 //    connect(ui->leaveBtn, &QPushButton::clicked, this, &MainWindow::PushBtnGoLobby);
     connect(ui->submitBtn, &QPushButton::clicked, this, &MainWindow::submitBtnHit);
     connect(ui->okRanking, &QPushButton::clicked, [=,this]{ ui->rankingGroup->hide(); });
+    connect(infoTimer, &QTimer::timeout, [&]{
+            infoTimer->stop();
+            ui->infoLine->setText("");
+        });
+
 
 }
 
@@ -52,7 +61,7 @@ void MainWindow::PushBtnEnter() {
                 QMessageBox::Ok;
     }
     sendMessage("100 ", name + '\n');
-    sleep(1);
+    sleep(2);
     if (nameAvaiable == true) {
         userName = name;
         ui->LoginGroup->hide();
@@ -81,6 +90,11 @@ void MainWindow::socketDisconnected(){
 }
 
 void MainWindow::socketError(QTcpSocket::SocketError err){
+    if(infoTimer){
+        infoTimer->stop();
+        infoTimer->deleteLater();
+        infoTimer=nullptr;
+    }
     if(err == QTcpSocket::RemoteHostClosedError) QApplication::exit(-1);
     QMessageBox::critical(this, "Connection Error", sock->errorString());
     if(sock) sock->close();
@@ -98,13 +112,14 @@ void MainWindow::socketReadable(){
 
     switch (head) {
     case 10:    // Info
-//        QMessageBox::information(this, "Server Info", message), QMessageBox::Ok;
+        infoTimer->start(800);
+        ui->infoLine->setText("Info: " + message);
         break;
     case 11:    // Letter
         if (! ui->GameGroup->isHidden()) ui->letterEdit->setText(message.toUpper());
         break;
     case 12:    // timer lobby
-        if (! ui->LobbyGroup->isHidden()) ui->showTimer->setText(message);
+        ui->showTimer->setText(message);
         break;
     case 13:    // timer game
         if (! ui->GameGroup->isHidden()) ui->timerEdit->setText(message);
@@ -163,7 +178,10 @@ void MainWindow::socketReadable(){
     case 200:    // start game
         ui->LobbyGroup->hide();
         ui->GameGroup->show();
-//        QMessageBox::information(this, "New Game", "New game will start now."), QMessageBox::Ok;
+
+        infoTimer->start(800);
+        ui->infoLine->setText("Info: New game is starting now.");
+
         ui->imieLine->clear();
         ui->miastoLine->clear();
         ui->panstwoLine->clear();
@@ -172,7 +190,9 @@ void MainWindow::socketReadable(){
         ui->zwierzeLine->clear();
         break;
     case 201:   // end game (lobby)
-//        QMessageBox::information(this, "Game Over", "The game is finished"), QMessageBox::Ok;
+        infoTimer->start(800);
+        ui->infoLine->setText("Info: The game is finished");
+
         ui->GameGroup->hide();
         ui->LobbyGroup->show();
         ui->imieLine->clear();

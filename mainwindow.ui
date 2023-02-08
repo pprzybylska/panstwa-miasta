@@ -956,10 +956,27 @@
      </layout>
     </widget>
    </widget>
+   <widget class="QLineEdit" name="infoLine">
+    <property name="enabled">
+     <bool>false</bool>
+    </property>
+    <property name="geometry">
+     <rect>
+      <x>12</x>
+      <y>544</y>
+      <width>851</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="readOnly">
+     <bool>true</bool>
+    </property>
+   </widget>
    <zorder>GameGroup</zorder>
    <zorder>LobbyGroup</zorder>
    <zorder>LoginGroup</zorder>
    <zorder>rankingGroup</zorder>
+   <zorder>infoLine</zorder>
   </widget>
  </widget>
  <resources/>

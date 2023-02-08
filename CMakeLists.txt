@@ -18,14 +18,6 @@ set(PROJECT_SOURCES
         mainwindow.cpp
         mainwindow.h
         mainwindow.ui
-#        login.h
-#        login.cpp
-#        login.ui
-#        game.h
-#        game.cpp
-#        game.ui
-#        sock.cpp
-#        sock.h
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)

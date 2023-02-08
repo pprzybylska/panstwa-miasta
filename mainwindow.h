@@ -6,6 +6,7 @@
 #include <QMessageBox>
 #include <QTcpSocket>
 #include <unistd.h>
+#include <QTimer>
 
 
 QT_BEGIN_NAMESPACE
@@ -29,6 +30,7 @@ protected:
     int numRanking;
     QList<QString> usersLobby;
     QList<QString> ranking;
+    QTimer * infoTimer{nullptr};
 
     void socketConnected();
     void socketDisconnected();
