@@ -51,7 +51,7 @@ void MainWindow::PushBtnEnter() {
         QMessageBox::critical(this, "Name Error", "You must chooose a name!"),
                 QMessageBox::Ok;
     }
-    sendMessage("100 ", name);
+    sendMessage("100 ", name + '\n');
     sleep(1);
     if (nameAvaiable == true) {
         userName = name;
@@ -98,7 +98,7 @@ void MainWindow::socketReadable(){
 
     switch (head) {
     case 10:    // Info
-        QMessageBox::information(this, "Server Info", message), QMessageBox::Ok;
+//        QMessageBox::information(this, "Server Info", message), QMessageBox::Ok;
         break;
     case 11:    // Letter
         if (! ui->GameGroup->isHidden()) ui->letterEdit->setText(message.toUpper());
@@ -136,7 +136,7 @@ void MainWindow::socketReadable(){
 
     case 18:    // lobby start  _counter
         usersLobby.clear();
-        numUsersLobby = message.toInt();
+        //numUsersLobby = message.toInt();
         break;
     case 19:    // lobby name   _name
         tmpName = QString::fromStdString(message.trimmed().toStdString());
@@ -145,8 +145,8 @@ void MainWindow::socketReadable(){
     case 20:    // lobby end    _\n
         ui->listLobby->clear();
         ui->listLobby->addItems(usersLobby);
-        if (usersLobby.length() != numUsersLobby)
-            ui->listLobby->addItem("... There was more, but we lost it. Sorry");
+        //if (usersLobby.length() != numUsersLobby)
+          //  ui->listLobby->addItem("... There was more, but we lost it. Sorry");
         break;
 
     case 21:    // name avaiable
@@ -163,12 +163,24 @@ void MainWindow::socketReadable(){
     case 200:    // start game
         ui->LobbyGroup->hide();
         ui->GameGroup->show();
-        QMessageBox::information(this, "New Game", "New game will start now."), QMessageBox::Ok;
+//        QMessageBox::information(this, "New Game", "New game will start now."), QMessageBox::Ok;
+        ui->imieLine->clear();
+        ui->miastoLine->clear();
+        ui->panstwoLine->clear();
+        ui->rzeczLine->clear();
+        ui->zawodLine->clear();
+        ui->zwierzeLine->clear();
         break;
     case 201:   // end game (lobby)
-        QMessageBox::information(this, "Game Over", "The game is finished"), QMessageBox::Ok;
+//        QMessageBox::information(this, "Game Over", "The game is finished"), QMessageBox::Ok;
         ui->GameGroup->hide();
         ui->LobbyGroup->show();
+        ui->imieLine->clear();
+        ui->miastoLine->clear();
+        ui->panstwoLine->clear();
+        ui->rzeczLine->clear();
+        ui->zawodLine->clear();
+        ui->zwierzeLine->clear();
         break;
     default:
         break;
@@ -192,12 +204,19 @@ void MainWindow::submitBtnHit(){
     auto object = ui->zwierzeLine->text().trimmed();
 //    if (object.isEmpty()) object = " ";
 
-    sendMessage("101 ", country + " ");
-    sendMessage("102 ", city + " ");
-    sendMessage("103 ", name + " ");
-    sendMessage("104 ", animal + " ");
-    sendMessage("105 ", job + " ");
-    sendMessage("106 ", object + " ");
+    sendMessage("101 ", country + '\n');
+    sendMessage("102 ", city + '\n');
+    sendMessage("103 ", name + '\n');
+    sendMessage("104 ", animal + '\n');
+    sendMessage("105 ", job + '\n');
+    sendMessage("106 ", object + '\n');
+
+    ui->imieLine->clear();
+    ui->miastoLine->clear();
+    ui->panstwoLine->clear();
+    ui->rzeczLine->clear();
+    ui->zawodLine->clear();
+    ui->zwierzeLine->clear();
 }
 
 int MainWindow::sendMessage(QString header, QString message) {
