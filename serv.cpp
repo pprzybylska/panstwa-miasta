@@ -81,8 +81,6 @@ playerStats playersStats[255];
 
 char buffer[255];
 
-void sendNicknamesLobby();
-
 //Array Management
 void clearBuffer();
 void clearArray(char* message, int size);
@@ -190,13 +188,13 @@ void gameManager(){
             snprintf(message, sizeof(message), "\n");
             count = setBuffer(startGameSignal, &message[0]);
 			sendToAll(count);
+			drawingLetter();
 
             clearArray(&message[0], 255);
 
             snprintf(message, sizeof(message), "Rozpoczynacie gre, aktualnie jest was %d graczy\n", gameCounter);
             count = setBuffer(sendInfo, &message[0]);
 			sendToAllinGame(count);
-			drawingLetter();
 		}
 		else if ((gameTimeSpan.count() > gameTime && gameState == 2) || (gamersCounter < 2 && gameState == 2)) {
             if (firstIteration == false) {
@@ -233,8 +231,8 @@ void gameManager(){
 			auto roundTimeSpan = static_cast<std::chrono::duration<double>>(sc.now() - startRoundTime);
 			if (roundTimeSpan.count() >= roundTime) {
                 createRanking();
-				startRoundTime = sc.now();
 				drawingLetter();
+				startRoundTime = sc.now();
 			}
 		}
 	}
@@ -308,16 +306,20 @@ void clearArray(char* message, int size) {
 
 int setBuffer(int type, char* content) {
     clearBuffer();
+
     int length = std::to_string(type).length();
     char numType[4];
 	std::to_chars(&numType[0], &numType[0] + length, type);
     for(int i = length; i < 4; i++ ) {
         numType[i] = char(32);
     }
-    int tmp = numType[3];
 
+    int tmp = numType[3];
+    // printf("buffer before: %s\n", buffer);
     snprintf(&buffer[0], 4, numType);
     snprintf(&buffer[4], sizeof(buffer) - 4, content);
+    printf("content %s\n", content);
+    // printf("buffer after: %s\n", buffer);
 
     // printf("sent: %s", buffer);
 
@@ -431,7 +433,6 @@ void clearPoints() {
     int i = 1;
     while(i < descrCount){
         int clientFd = descr[i].fd;
-        printf("Clearing!");
         playersStats[clientFd].points = 0;
         i++;
     }
@@ -538,6 +539,7 @@ bool areValuesUnique(int currentFd, char array[255][20]) {
 void createRanking() {
     int i = 1;
     bool isUnique;
+    printf("Letter for which we're counting: %c\n", currentLetter);
     while(i < descrCount){
         int clientFd = descr[i].fd;
 
@@ -743,6 +745,7 @@ void eventOnClientFd(int indexInDescr) {
                         case receiveNickname:
                             strncpy(nickname, messageText, 10);
                             nicknameUnique = isNicknameUnique(&nickname[0]);
+
                             if (nicknameUnique == true) {
                                 strncpy(playersStats[clientFd].nickname, nickname, 10);
                                 snprintf(message, sizeof(message), "true\n");
@@ -754,7 +757,6 @@ void eventOnClientFd(int indexInDescr) {
                                 snprintf(message, sizeof(message), "Nowy gracz! Aktualnie w lobby znaduje sie %d graczy.\n", lobbyCounter);
                                 count = setBuffer(sendInfo, &message[0]);
                                 sendToAllinLobby(count);
-
                                 sendNicknamesLobby();
                             }
                             else {
