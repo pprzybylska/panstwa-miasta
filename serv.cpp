@@ -16,6 +16,7 @@
 #include <charconv>
 #include <cstring>
 #include <iostream>
+#include <fstream>
 
 const int sendInfo = 10;
 const int sendLetter = 11;
@@ -267,6 +268,30 @@ int main(int argc, char ** argv){
     
     descr[0].fd = servFd;
     descr[0].events = POLLIN;
+
+    printf("round time: %d\n", roundTime);
+    printf("game time: %d\n", gameTime);
+    printf("break time: %d\n", breakTime);
+    
+    int pos;
+    std::string temp;
+    std::ifstream config("config.txt");
+
+    getline(config, temp);
+    pos = temp.find(" : ");
+    breakTime = stoi(temp.substr(pos + 3));
+    getline(config, temp);
+    pos = temp.find(" : ");
+    gameTime = stoi(temp.substr(pos + 3));
+    getline(config, temp);
+    pos = temp.find(" : ");
+    roundTime = stoi(temp.substr(pos + 3));
+
+    printf("round time: %d\n", roundTime);
+    printf("game time: %d\n", gameTime);
+    printf("break time: %d\n", breakTime);
+
+    config.close();
 
 	std::thread t(gameManager);
 

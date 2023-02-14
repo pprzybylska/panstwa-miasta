@@ -1,0 +1,3 @@
+breakTime : 30
+gameTime : 30
+roundTime : 10
