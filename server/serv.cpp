@@ -244,7 +244,7 @@ int main(int argc, char ** argv){
     int pos;
     std::string temp;
     char temp_ip[20], temp_port[4];
-    std::ifstream config("config.txt");
+    std::ifstream config("../config.txt");
 
     getline(config, temp);
     pos = temp.find(" : ");
