@@ -1,0 +1,6 @@
+breakTime : 30
+gameTime : 30
+roundTime : 10
+ip : 127.0.0.1
+port : 8080
+
