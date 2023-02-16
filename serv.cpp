@@ -240,10 +240,6 @@ void gameManager(){
 }
 
 int main(int argc, char ** argv){
-
-    printf("round time: %d\n", roundTime);
-    printf("game time: %d\n", gameTime);
-    printf("break time: %d\n", breakTime);
     
     int pos;
     std::string temp;
@@ -269,11 +265,6 @@ int main(int argc, char ** argv){
     getline(config, temp);
     pos = temp.find(" : ");
     strcpy(temp_port, temp.substr(pos + 3).c_str());
-
-
-    printf("round time: %d\n", roundTime);
-    printf("game time: %d\n", gameTime);
-    printf("break time: %d\n", breakTime);
 
     // get and validate port number
     // if(argc != 2) error(1, 0, "Need 1 arg (port)");
@@ -354,13 +345,10 @@ int setBuffer(int type, char* content) {
     }
 
     int tmp = numType[3];
-    // printf("buffer before: %s\n", buffer);
     snprintf(&buffer[0], 4, numType);
     snprintf(&buffer[4], sizeof(buffer) - 4, content);
     printf("content %s\n", content);
-    // printf("buffer after: %s\n", buffer);
 
-    // printf("sent: %s", buffer);
 
     return std::strlen(content) + 4;
 }
@@ -686,7 +674,7 @@ void sendRanking() {
 
         if (gamersState[clientFd] == 2) {
             clearArray(&message[0], 255);
-            printf("Current rankig of %d fd: %d\n", clientFd, playersStats[clientFd].points);
+
             snprintf(message, sizeof(message), "%s;%d\n", playersStats[clientFd].nickname, playersStats[clientFd].points);
             count = setBuffer(sendRankingPosition, &message[0]);
             sendToAll(count);
@@ -777,8 +765,6 @@ void eventOnClientFd(int indexInDescr) {
                     temp = i + 1;
                     int messageType = extractMessageType(&tempBuffer[0]);
                     extractMessageText(&tempBuffer[0], &messageText[0]);
-                    printf("%d\n", messageType);
-                    printf("%s\n", messageText);
 
                     switch (messageType) {
                         case receiveNickname:
