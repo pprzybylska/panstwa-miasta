@@ -1,13 +1,15 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
 
-MainWindow::MainWindow(qint16 port, QString ip, QWidget *parent):
+MainWindow::MainWindow(std::string configurationPath, QWidget *parent):
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
     userName = "";
     nameAvaiable = false;
+
+    getConfig(configurationPath);
 
     ui->GameGroup->hide();
     ui->LobbyGroup->hide();
@@ -49,6 +51,42 @@ MainWindow::~MainWindow() {
     if(sock) sock->close();
     delete ui;
 }
+
+void MainWindow::getConfig(std::string configPath) {
+    std::fstream config;
+    config.open(configPath, std::fstream::in);
+
+    int pos;
+    std::string temp;
+//    std::ifstream config(configPath);
+
+    if (config.is_open())  {
+        std::getline(config, temp);
+        pos = temp.find(" : ");
+        printf("%d", pos);
+        breakTime = stoi(temp.substr(pos + 3));
+
+        std::getline(config, temp);
+        pos = temp.find(" : ");
+        gameTime = stoi(temp.substr(pos + 3));
+
+        std::getline(config, temp);
+        pos = temp.find(" : ");
+        roundTime = stoi(temp.substr(pos + 3));
+
+        std::getline(config, temp);
+        pos = temp.find(" : ");
+        ip = QString::fromStdString(temp.substr(pos + 3));
+
+        std::getline(config, temp);
+        pos = temp.find(" : ");
+        QString tmp = QString::fromStdString(temp.substr(pos + 3));
+        port = tmp.toUShort();
+
+        config.close();
+    }
+}
+
 
 void MainWindow::PushBtnEnter() {
 
@@ -116,7 +154,7 @@ void MainWindow::socketReadable(){
         ui->infoLine->setText("Info: " + message);
         break;
     case 11:    // Letter
-        if (! ui->GameGroup->isHidden()) ui->letterEdit->setText(message.toUpper());
+        ui->letterEdit->setText(message.toUpper());
         break;
     case 12:    // timer lobby
         ui->showTimer->setText(message);
@@ -195,6 +233,7 @@ void MainWindow::socketReadable(){
 
         ui->GameGroup->hide();
         ui->LobbyGroup->show();
+
         ui->imieLine->clear();
         ui->miastoLine->clear();
         ui->panstwoLine->clear();

@@ -6,6 +6,10 @@
 #include <QMessageBox>
 #include <QTcpSocket>
 #include <unistd.h>
+#include <fstream>
+#include <string>
+#include <algorithm>
+#include <iostream>
 #include <QTimer>
 
 
@@ -18,10 +22,16 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    MainWindow(qint16 port, QString ip, QWidget *parent = nullptr);
+    MainWindow(std::string configurationPath, QWidget *parent = nullptr);
     ~MainWindow();
 
 protected:
+    qint16 port;
+    QString ip;
+    int roundTime;
+    int gameTime;
+    int breakTime;
+
     QTcpSocket* sock;
     QString userName;
     bool nameAvaiable;
@@ -40,6 +50,7 @@ protected:
     void PushBtnEnter();
     void submitBtnHit();
     int sendMessage(QString header, QString message);
+    void getConfig(std::string configPath);
 
 private:
     Ui::MainWindow *ui;

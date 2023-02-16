@@ -2,16 +2,19 @@
 
 #include <QApplication>
 #include <QTcpSocket>
+#include <unistd.h>
 
 
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
 
-    QString ip = "localhost";
-    qint16 port = 8080;
+    std::string  configurationPath = "config.txt";
 
-    MainWindow lobby(port, ip);
+//    QString ip = "localhost";
+//    qint16 port = 8080;
+
+    MainWindow lobby(configurationPath);
 
     lobby.show();
     if (a.exec() < 0) return -1;
