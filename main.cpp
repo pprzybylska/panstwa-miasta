@@ -9,7 +9,7 @@ int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
 
-    std::string  configurationPath = "config.txt";
+    std::string  configurationPath = "../panstwa-miasta/config.txt";
 
 //    QString ip = "localhost";
 //    qint16 port = 8080;

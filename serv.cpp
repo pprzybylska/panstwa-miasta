@@ -240,9 +240,44 @@ void gameManager(){
 }
 
 int main(int argc, char ** argv){
+
+    printf("round time: %d\n", roundTime);
+    printf("game time: %d\n", gameTime);
+    printf("break time: %d\n", breakTime);
+    
+    int pos;
+    std::string temp;
+    char temp_ip[20], temp_port[4];
+    std::ifstream config("config.txt");
+
+    getline(config, temp);
+    pos = temp.find(" : ");
+    breakTime = stoi(temp.substr(pos + 3));
+    getline(config, temp);
+    pos = temp.find(" : ");
+    gameTime = stoi(temp.substr(pos + 3));
+    getline(config, temp);
+    pos = temp.find(" : ");
+    roundTime = stoi(temp.substr(pos + 3));
+    getline(config, temp);
+    pos = temp.find(" : ");
+    strcpy(temp_ip, temp.substr(pos + 3).c_str());
+    printf("%s\n", temp_ip);
+    in_addr ip;
+    inet_aton(temp_ip, &ip);
+
+    getline(config, temp);
+    pos = temp.find(" : ");
+    strcpy(temp_port, temp.substr(pos + 3).c_str());
+
+
+    printf("round time: %d\n", roundTime);
+    printf("game time: %d\n", gameTime);
+    printf("break time: %d\n", breakTime);
+
     // get and validate port number
-    if(argc != 2) error(1, 0, "Need 1 arg (port)");
-    auto port = readPort(argv[1]);
+    // if(argc != 2) error(1, 0, "Need 1 arg (port)");
+    auto port = readPort(temp_port);
     
     // create socket
     servFd = socket(AF_INET, SOCK_STREAM, 0);
@@ -256,7 +291,8 @@ int main(int argc, char ** argv){
     setReuseAddr(servFd);
     
     // bind to any address and port provided in arguments
-    sockaddr_in serverAddr{.sin_family=AF_INET, .sin_port=htons((short)port), .sin_addr={INADDR_ANY}};
+    
+    sockaddr_in serverAddr{.sin_family=AF_INET, .sin_port=htons((short)port), .sin_addr = ip};
     int res = bind(servFd, (sockaddr*) &serverAddr, sizeof(serverAddr));
     if(res) error(1, errno, "bind failed");
     
@@ -268,28 +304,6 @@ int main(int argc, char ** argv){
     
     descr[0].fd = servFd;
     descr[0].events = POLLIN;
-
-    printf("round time: %d\n", roundTime);
-    printf("game time: %d\n", gameTime);
-    printf("break time: %d\n", breakTime);
-    
-    int pos;
-    std::string temp;
-    std::ifstream config("config.txt");
-
-    getline(config, temp);
-    pos = temp.find(" : ");
-    breakTime = stoi(temp.substr(pos + 3));
-    getline(config, temp);
-    pos = temp.find(" : ");
-    gameTime = stoi(temp.substr(pos + 3));
-    getline(config, temp);
-    pos = temp.find(" : ");
-    roundTime = stoi(temp.substr(pos + 3));
-
-    printf("round time: %d\n", roundTime);
-    printf("game time: %d\n", gameTime);
-    printf("break time: %d\n", breakTime);
 
     config.close();
 
